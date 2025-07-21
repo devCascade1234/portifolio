@@ -1,10 +1,15 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Mail, MapPin, Send, Linkedin, Github, Instagram, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../contexts/AppContext';
 import emailjs from '@emailjs/browser';
 
-
+// Déclaration pour reCAPTCHA
+declare global {
+  interface Window {
+    grecaptcha: any;
+  }
+}
 
 interface FormErrors {
   name?: string;
@@ -29,7 +34,7 @@ const BehanceIcon = ({ size = 24, className = "" }) => (
 );
 
 export default function Contact() {
-  const { t } = useApp();
+  const { t, theme } = useApp();
   const [formData, setFormData] = useState<ContactFormData>({
     name: '',
     email: '',
@@ -40,6 +45,25 @@ export default function Contact() {
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
+
+  // Charger le script reCAPTCHA
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://www.google.com/recaptcha/api.js';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => setRecaptchaLoaded(true);
+    document.head.appendChild(script);
+
+    return () => {
+      // Nettoyer le script lors du démontage
+      const existingScript = document.querySelector('script[src="https://www.google.com/recaptcha/api.js"]');
+      if (existingScript) {
+        document.head.removeChild(existingScript);
+      }
+    };
+  }, []);
 
   // Debug logs pour vérifier les traductions
   console.log('Debug: contact.locationValue =', t('contact.locationValue'));
@@ -94,26 +118,26 @@ export default function Contact() {
       return;
     }
 
-    if (!formRef.current) {
-      setFormErrors({ general: 'Formulaire non disponible.' });
+    // Vérifier le token reCAPTCHA
+    const token = window.grecaptcha?.getResponse();
+    if (!token) {
+      setFormErrors({ general: 'Veuillez valider le reCAPTCHA.' });
       return;
     }
 
-    // reCAPTCHA v2 token retrieval
-    const token = (window as any).grecaptcha?.getResponse();
-    if (!token) {
-      setFormErrors({ general: 'Veuillez valider le reCAPTCHA.' });
+    if (!formRef.current) {
+      setFormErrors({ general: 'Formulaire non disponible.' });
       return;
     }
 
     setLoading(true);
     setFormErrors({});
 
- try {
+    try {
       await emailjs.sendForm(
         'service_h3ssx3b',
         'template_o7xxj1i',
-        formRef.current!,
+        formRef.current,
         'KoRrLgL-0PoU0PCa2'
       );
 
@@ -125,7 +149,7 @@ export default function Contact() {
         message: ''
       });
 
-      (window as any).grecaptcha.reset();
+      window.grecaptcha?.reset();
     } catch (error) {
       setFormErrors({ general: 'Une erreur est survenue lors de l\'envoi. Veuillez réessayer.' });
     } finally {
@@ -483,34 +507,41 @@ export default function Contact() {
             </AnimatePresence>
           </motion.div>
 
-          {/* Submit */}
-  {/* Add reCAPTCHA widget here */}
-  <div className="recaptcha-container" style={{ marginBottom: '1rem', display: 'block', position: 'relative' }}>
-    <div
-      className="g-recaptcha"
-      data-sitekey="YOUR_SITE_KEY" // Replace with your actual site key
-    ></div>
-  </div>
+          {/* reCAPTCHA */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            whileInView={{ opacity: 1, y: 0 }} 
+            transition={{ delay: 0.5 }}
+            className="flex justify-center"
+          >
+            {recaptchaLoaded && (
+              <div
+                className="g-recaptcha"
+                data-sitekey="6Lfdh4krAAAAAMRPPaco3f5H2JZ7PzNToawtodX2"
+                data-theme={theme === 'dark' ? 'dark' : 'light'}
+              />
+            )}
+          </motion.div>
 
-  <motion.button
-    type="submit"
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.5 }}
-    whileHover={{ scale: isFormValid && !loading ? 1.02 : 1, y: isFormValid && !loading ? -2 : 0 }}
-    whileTap={{ scale: isFormValid && !loading ? 0.98 : 1 }}
-    disabled={!isFormValid || loading}
-    className={`w-full py-3 sm:py-4 rounded-xl font-medium flex items-center justify-center gap-3 transition-all ${
-      isFormValid && !loading
-        ? 'bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100 shadow-lg hover:shadow-xl'
-        : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-    }`}
-  >
-    {loading ? 'Envoi...' : t('contact.sendBtn')}
-    <motion.div whileHover={{ x: 5, rotate: 15 }} transition={{ duration: 0.2 }}>
-      <Send className="w-5 h-5" />
-    </motion.div>
-  </motion.button>
+          <motion.button
+            type="submit"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            whileHover={{ scale: isFormValid && !loading ? 1.02 : 1, y: isFormValid && !loading ? -2 : 0 }}
+            whileTap={{ scale: isFormValid && !loading ? 0.98 : 1 }}
+            disabled={!isFormValid || loading}
+            className={`w-full py-3 sm:py-4 rounded-xl font-medium flex items-center justify-center gap-3 transition-all ${
+              isFormValid && !loading
+                ? 'bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100 shadow-lg hover:shadow-xl'
+                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {loading ? 'Envoi...' : t('contact.sendBtn')}
+            <motion.div whileHover={{ x: 5, rotate: 15 }} transition={{ duration: 0.2 }}>
+              <Send className="w-5 h-5" />
+            </motion.div>
+          </motion.button>
         </form>
 
 
