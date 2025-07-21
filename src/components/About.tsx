@@ -101,6 +101,9 @@ export default function About() {
 
   return (
     <section id="about" className="py-16 sm:py-24 lg:py-32 bg-white dark:bg-black relative overflow-hidden">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 section-pattern opacity-50" />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left side - Content */}
@@ -109,7 +112,7 @@ export default function About() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="space-y-8 lg:space-y-10"
+            className="space-y-8 lg:space-y-10 relative z-10"
           >
             <div className="space-y-4 sm:space-y-6">
               <motion.div

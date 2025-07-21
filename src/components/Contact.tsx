@@ -559,15 +559,31 @@ export default function Contact() {
             initial={{ opacity: 0, y: 20 }} 
             whileInView={{ opacity: 1, y: 0 }} 
             transition={{ delay: 0.5 }}
-            className="flex justify-center"
+            className="flex justify-start mb-6"
           >
-            {recaptchaLoaded && (
-              <div
-                className="g-recaptcha"
-                data-sitekey="6Lfdh4krAAAAAMRPPaco3f5H2JZ7PzNToawtodX2"
-                data-theme={theme === 'dark' ? 'dark' : 'light'}
-              />
-            )}
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Vérification de sécurité *
+              </label>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 inline-block shadow-sm">
+                {recaptchaLoaded ? (
+                  <div
+                    className="g-recaptcha"
+                    data-sitekey="6Lfdh4krAAAAAMRPPaco3f5H2JZ7PzNToawtodX2"
+                    data-theme={theme === 'dark' ? 'dark' : 'light'}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center w-[304px] h-[78px] bg-gray-100 dark:bg-gray-700 rounded border-2 border-dashed border-gray-300 dark:border-gray-600">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="w-6 h-6 border-2 border-gray-400 border-t-gray-600 dark:border-gray-500 dark:border-t-gray-300 rounded-full"
+                    />
+                    <span className="ml-3 text-gray-500 dark:text-gray-400 text-sm">Chargement du reCAPTCHA...</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </motion.div>
 
           <motion.button

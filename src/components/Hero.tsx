@@ -22,7 +22,7 @@ export default function Hero() {
     <>
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white dark:bg-black pt-16 sm:pt-20">
         {/* Subtle animated background elements */}
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 section-pattern">
           {[...Array(8)].map((_, i) => (
             <motion.div
               key={i}
