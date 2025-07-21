@@ -136,7 +136,7 @@ export default function Portfolio() {
               transition={{ delay: index * 0.1, duration: 0.6 }}
               whileHover={{ y: -10, scale: 1.02, transition: { duration: 0.3 } }}
               onClick={() => handleProjectClick(project.behanceLink)}
-              className="group relative bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer project-card border border-gray-100 dark:border-gray-700"
+              className="group relative bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer project-card border border-gray-100 dark:border-gray-700 card-enhanced"
             >
               {/* Image Container */}
               <div className="relative overflow-hidden h-64 sm:h-80">
