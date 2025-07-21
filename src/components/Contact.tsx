@@ -76,36 +76,55 @@ export default function Contact() {
   };
 
   const validateForm = (): boolean => {
+    console.log('🔍 validateForm called with formData:', formData);
     const errors: FormErrors = {};
 
     // Validation du nom
     if (!formData.name.trim()) {
       errors.name = 'Le nom est requis';
+      console.log('❌ Name error: empty');
     } else if (formData.name.trim().length < 2) {
       errors.name = 'Le nom doit contenir au moins 2 caractères';
+      console.log('❌ Name error: too short, length:', formData.name.trim().length);
+    } else {
+      console.log('✅ Name valid:', formData.name.trim());
     }
 
     // Validation de l'email
     if (!formData.email.trim()) {
       errors.email = 'L\'email est requis';
+      console.log('❌ Email error: empty');
     } else if (!validateEmail(formData.email)) {
       errors.email = 'Veuillez entrer un email valide';
+      console.log('❌ Email error: invalid format:', formData.email);
+    } else {
+      console.log('✅ Email valid:', formData.email);
     }
 
     // Validation du sujet
     if (!formData.subject.trim()) {
       errors.subject = 'Le sujet est requis';
+      console.log('❌ Subject error: empty');
     } else if (formData.subject.trim().length < 5) {
       errors.subject = 'Le sujet doit contenir au moins 5 caractères';
+      console.log('❌ Subject error: too short, length:', formData.subject.trim().length);
+    } else {
+      console.log('✅ Subject valid:', formData.subject.trim());
     }
 
     // Validation du message
     if (!formData.message.trim()) {
       errors.message = 'Le message est requis';
+      console.log('❌ Message error: empty');
     } else if (formData.message.trim().length < 10) {
       errors.message = 'Le message doit contenir au moins 10 caractères';
+      console.log('❌ Message error: too short, length:', formData.message.trim().length);
+    } else {
+      console.log('✅ Message valid:', formData.message.trim().length, 'characters');
     }
 
+    console.log('📋 Validation errors found:', errors);
+    console.log('📊 Errors count:', Object.keys(errors).length);
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -113,27 +132,37 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚀 handleSubmit called');
+    console.log('📝 Current formData:', formData);
+    console.log('⚠️ Current formErrors before validation:', formErrors);
+    console.log('🔄 Current loading state:', loading);
 
     if (!validateForm()) {
+      console.log('❌ Form validation failed, stopping submission');
       return;
     }
 
     // Vérifier le token reCAPTCHA
     const token = window.grecaptcha?.getResponse();
+    console.log('🔐 reCAPTCHA token:', token ? 'Present' : 'Missing');
     if (!token) {
       setFormErrors({ general: 'Veuillez valider le reCAPTCHA.' });
+      console.log('❌ reCAPTCHA validation failed');
       return;
     }
 
     if (!formRef.current) {
       setFormErrors({ general: 'Formulaire non disponible.' });
+      console.log('❌ Form ref not available');
       return;
     }
 
+    console.log('✅ All validations passed, starting email send...');
     setLoading(true);
     setFormErrors({});
 
     try {
+      console.log('📧 Sending email via EmailJS...');
       await emailjs.sendForm(
         'service_h3ssx3b',
         'template_o7xxj1i',
@@ -141,6 +170,7 @@ export default function Contact() {
         'KoRrLgL-0PoU0PCa2'
       );
 
+      console.log('✅ Email sent successfully');
       setSubmissionSuccess(true);
       setFormData({
         name: '',
@@ -150,15 +180,20 @@ export default function Contact() {
       });
 
       window.grecaptcha?.reset();
+      console.log('🔄 Form reset and reCAPTCHA cleared');
     } catch (error) {
+      console.error('❌ EmailJS error:', error);
       setFormErrors({ general: 'Une erreur est survenue lors de l\'envoi. Veuillez réessayer.' });
     } finally {
+      console.log('🏁 handleSubmit finished, setting loading to false');
       setLoading(false);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    console.log(`📝 Field changed: ${name} = "${value}"`);
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -166,9 +201,11 @@ export default function Contact() {
 
     // Effacer l'erreur du champ modifié
     if (formErrors[name as keyof FormErrors]) {
+      console.log(`🧹 Clearing error for field: ${name}`);
       setFormErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors[name as keyof FormErrors];
+        console.log('🔄 Updated formErrors:', newErrors);
         return newErrors;
       });
     }
@@ -176,6 +213,16 @@ export default function Contact() {
 
   const hasErrors = Object.keys(formErrors).length > 0;
   const isFormValid = formData.name && formData.email && formData.subject && formData.message && !hasErrors;
+  
+  // Debug logs pour le bouton de soumission
+  console.log('🎯 Button state debug:');
+  console.log('  - formData.name:', !!formData.name, `"${formData.name}"`);
+  console.log('  - formData.email:', !!formData.email, `"${formData.email}"`);
+  console.log('  - formData.subject:', !!formData.subject, `"${formData.subject}"`);
+  console.log('  - formData.message:', !!formData.message, `"${formData.message}"`);
+  console.log('  - hasErrors:', hasErrors, formErrors);
+  console.log('  - isFormValid:', isFormValid);
+  console.log('  - loading:', loading);
 
   return (
     <section id="contact" className="py-24 sm:py-32 lg:py-40 bg-white dark:bg-black relative overflow-hidden">
